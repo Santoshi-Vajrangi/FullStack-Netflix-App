@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Navbar from "../components/Navbar";
 import { onAuthStateChanged } from "firebase/auth";
@@ -12,8 +12,8 @@ import NotAvailable from "../components/NotAvailable";
 
 function MoviePage() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const movies = useSelector((state) => state.netflix.movies);
-  const genres = useSelector((state) => state.netflix.genres);
+  const movies = useSelector((state) => state.netflix.movies) || [];
+  const genres = useSelector((state) => state.netflix.genres) || [];
   const genresLoaded = useSelector((state) => state.netflix.genresLoaded);
 
   const navigate = useNavigate();
@@ -21,25 +21,39 @@ function MoviePage() {
 
   useEffect(() => {
     dispatch(getGenres());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (genresLoaded) {
-      dispatch(fetchMovies({ genres, type: "movie" }));
+      dispatch(fetchMovies({ genres, type: "movie" })).catch((error) => {
+        console.error("Failed to fetch movies:", error);
+      });
     }
-  }, [genresLoaded]);
+  }, [genresLoaded, genres, dispatch]);
 
   const [user, setUser] = useState(undefined);
 
-  onAuthStateChanged(firebaseAuth, (currentUser) => {
-    if (currentUser) setUser(currentUser.uid);
-    else navigate("/login");
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+      if (currentUser) setUser(currentUser.uid);
+      else navigate("/login");
+    });
 
-  window.onscroll = () => {
-    setIsScrolled(window.pageYOffset === 0 ? false : true);
-    return () => (window.onscroll = null);
-  };
+    return () => {
+      unsubscribe();
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.pageYOffset !== 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <Container>
@@ -48,7 +62,7 @@ function MoviePage() {
       </div>
       <div className="data">
         <SelectGenre genres={genres} type="movie" />
-        {movies.length ? <Slider movies={movies} /> : <NotAvailable />}
+        {movies.length > 0 ? <Slider movies={movies} /> : <NotAvailable />}
       </div>
     </Container>
   );
@@ -64,4 +78,5 @@ const Container = styled.div`
     }
   }
 `;
+
 export default MoviePage;
