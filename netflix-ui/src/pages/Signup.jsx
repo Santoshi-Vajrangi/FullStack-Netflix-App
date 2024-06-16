@@ -1,4 +1,4 @@
-import {
+ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
 } from "firebase/auth";
