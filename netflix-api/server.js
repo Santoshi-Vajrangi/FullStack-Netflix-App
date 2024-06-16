@@ -1,4 +1,4 @@
-const express = require("express");
+ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/UserRoutes");
 const mongoose = require("mongoose");
@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 mongoose
-   .connect("mongodb+srv://santoshinv26:Santoshi123@cluster1.tpqgum0.mongodb.net/netflix?retryWrites=true&w=majority&appName=Cluster1", {
+  .connect("mongodb+srv://santoshinv26:Santoshi123@cluster1.tpqgum0.mongodb.net/netflix?retryWrites=true&w=majority&appName=Cluster1", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
